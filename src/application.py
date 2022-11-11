@@ -46,56 +46,67 @@ def add_new_section():
     return response
 
 
+# Stephanie
 @app.route("/api/sections/<call_no>/new_student", methods=['POST'])
 def add_new_student(call_no):
     pass
 
 
+# Stephanie
 @app.route("/api/sections/<call_no>/new_project", methods=['POST'])
 def add_new_project(call_no):
     pass
 
 
+# Stephanie
 @app.route("/api/sections/<call_no>/projects/<project_id>/new_student", methods=['POST'])
 def add_student_to_project(call_no, project_id):
     pass
 
 
+# Stephanie
 @app.route("/api/sections", methods=['GET'])
 def get_all_sections():
     pass
 
 
+# Stephanie
 @app.route("/api/sections/students", methods=['GET'])
 def get_all_students():
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>", methods=['GET'])
 def get_one_section(call_no):
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>/projects", methods=['GET'])
 def get_all_projects_in_one_section(call_no):
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>/projects/<project_id>", methods=['GET'])
 def get_one_project_in_one_section(call_no, project_id):
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>/projects/<project_id>/all_students", methods=['GET'])
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
     pass
 
 
+# Zhiyuan
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['GET'])
 def get_a_student_in_one_section(uni):
     pass
