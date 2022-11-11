@@ -7,6 +7,7 @@ drop table if exists section;
 drop table if exists enrollment;
 drop table if exists period;
 drop table if exists project;
+drop table if exists section_type;
 
 create table period(
 	`id` int auto_increment,
@@ -18,6 +19,12 @@ create table period(
     `end_hr` int not null,
     `end_min` int not null,
     primary key (`id`)
+);
+
+create table section_type(
+	`id` int auto_increment,
+    `description` varchar(10) not null,
+    primary key(`id`)
 );
 
 
@@ -53,3 +60,8 @@ create table enrollment(
 		references project(`id`),
 	primary key(`call_no`, `uni`)
 );
+
+insert into section_type(`description`)
+values("in_person");
+insert into section_type(`description`)
+values("CVN");
