@@ -39,7 +39,8 @@ def add_new_section():
         response.status_code = 400
         return response
 
-    SectionResource.add_new_section(data['professor'], period_id[0], data['classroom'])
+    section_type_id = SectionResource.search_section_type(data['section_type'])
+    SectionResource.add_new_section(data['professor'], period_id[0], data['classroom'], section_type_id[0])
 
     response = jsonify('Successfully added')
     response.status_code = 200

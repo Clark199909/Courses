@@ -1,5 +1,6 @@
 from src import db
 from src.models.section import Section
+from src.models.section_type import SectionType
 
 
 class SectionResource:
@@ -13,9 +14,14 @@ class SectionResource:
                                                    classroom=classroom).first()
 
     @staticmethod
-    def add_new_section(professor, period_id, classroom):
+    def add_new_section(professor, period_id, classroom, section_type_id):
         section = Section(professor=professor,
                           period_id=period_id,
-                          classroom=classroom)
+                          classroom=classroom,
+                          section_type_id=section_type_id)
         db.session.add(section)
         db.session.commit()
+
+    @staticmethod
+    def search_section_type(description):
+        return db.session.query(SectionType.id).filter_by(description=description).first()

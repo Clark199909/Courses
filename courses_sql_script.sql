@@ -33,9 +33,12 @@ create table section(
     `professor` varchar(255) not null,
     `period_id` int not null,
     `classroom` varchar(20) not null,
+    `section_type_id` int not null,
     primary key (`call_no`),
     foreign key (`period_id`)
-		references period(`id`)
+		references period(`id`),
+	foreign key (`section_type_id`)
+		references section_type(`id`)
 );
 
 
