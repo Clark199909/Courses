@@ -11,7 +11,7 @@ drop table if exists project;
 create table period(
 	`id` int auto_increment,
     `year` int not null,
-    `semester` int not null,
+    `semester` varchar(10) not null,
     `day` varchar(10) not null,
     `start_hr` int not null,
     `start_min` int not null,
@@ -34,15 +34,18 @@ create table section(
 
 create table project(
 	`id` int auto_increment,
+    `call_no` int not null,
     `project_name` varchar(255) not null,
     `team_name` varchar(255) not null,
-    primary key(`id`)
+    primary key(`id`),
+    foreign key (`call_no`)
+		references section(`call_no`)
 );
 
 
 create table enrollment(
 	`call_no` int not null,
-    `uni` int not null,
+    `uni` varchar(10) not null,
     `project_id` int not null,
     foreign key(`call_no`)
 		references section(`call_no`),
