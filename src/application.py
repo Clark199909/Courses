@@ -4,6 +4,7 @@ from src import app
 
 from src.resources.period_resource import PeriodResource
 from src.resources.section_resource import SectionResource
+from src.resources.enrollment_resource import EnrollmentResource
 
 
 @app.route("/api/sections/new_section", methods=['POST'])
@@ -121,7 +122,17 @@ def get_one_section(call_no):
 # Zhiyuan
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
-    pass
+    enrollments = EnrollmentResource.get_uni_by_callno(call_no)
+    if enrollments is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+    
+    data = [enrollment.uni for enrollment in enrollments]
+    response = jsonify(data)
+    response.status_code = 200
+    return response
+
 
 
 # Zhiyuan
