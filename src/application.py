@@ -178,7 +178,16 @@ def get_one_project_in_one_section(call_no, project_id):
 # Zhiyuan
 @app.route("/api/sections/<call_no>/projects/<project_id>/all_students", methods=['GET'])
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
-    pass
+    enrollments = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
+    if enrollments is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    data = [enrollment.uni for enrollment in enrollments]
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
