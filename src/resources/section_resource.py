@@ -25,3 +25,11 @@ class SectionResource:
     @staticmethod
     def search_section_type(description):
         return db.session.query(SectionType.id).filter_by(description=description).first()
+
+    @staticmethod
+    def get_a_section_by_callno(callno):
+        return db.session.query(Section).filter_by(call_no=callno).first()
+
+    @staticmethod
+    def search_section_type_by_id(section_type_id):
+        return db.session.query(SectionType).filter_by(id=section_type_id).first()

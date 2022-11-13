@@ -25,6 +25,7 @@ def add_new_section():
                                       data['start_min'],
                                       data['end_hr'],
                                       data['end_min'])
+
         period_id = PeriodResource.get_period_id(data['year'],
                                                  data['semester'],
                                                  data['day'],
@@ -80,8 +81,42 @@ def get_all_students():
 # Zhiyuan
 @app.route("/api/sections/<call_no>", methods=['GET'])
 def get_one_section(call_no):
-    pass
+    section = SectionResource.get_a_section_by_callno(call_no)
 
+    if section is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    section_type_id = section.section_type_id
+    section_type = SectionResource.search_section_type_by_id(section_type_id)
+    if section_type is None:
+        response = jsonify('Section type does not exist! Check db for consistency!')
+        response.status_code = 400
+        return response
+
+    period_id = section.period_id
+    period = PeriodResource.get_period_by_id(period_id)
+    if period is None:
+        response = jsonify('Period does not exist! Check db for consistency!')
+        response.status_code = 400
+        return response
+
+    data = {"call_no": section.call_no,
+            "professor": section.professor, 
+            "classroom": section.classroom, 
+            "section_type": section_type.description, 
+            "year": period.year, 
+            "semester": period.semester, 
+            "day": period.day, 
+            "start_hr": period.start_hr, 
+            "start_min": period.start_min, 
+            "end_hr": period.end_hr,
+            "end_min": period.end_min,
+            }
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>/students", methods=['GET'])

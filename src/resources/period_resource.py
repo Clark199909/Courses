@@ -27,3 +27,7 @@ class PeriodResource:
                                                      start_min=start_min,
                                                      end_hr=end_hr,
                                                      end_min=end_min).first()
+
+    @staticmethod
+    def get_period_by_id(period_id):
+        return db.session.query(Period).filter_by(id=period_id).first()
