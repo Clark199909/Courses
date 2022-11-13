@@ -125,7 +125,7 @@ def get_one_section(call_no):
 def get_students_in_one_section(call_no):
     enrollments = EnrollmentResource.get_uni_by_callno(call_no)
     if enrollments is None:
-        response = jsonify('Section does not exist!')
+        response = jsonify('No record found!')
         response.status_code = 400
         return response
     
@@ -139,7 +139,7 @@ def get_students_in_one_section(call_no):
 def get_all_projects_in_one_section(call_no):
     enrollments = EnrollmentResource.get_project_by_callno(call_no)
     if enrollments is None:
-        response = jsonify('Section does not exist!')
+        response = jsonify('No record found!')
         response.status_code = 400
         return response
     
@@ -180,7 +180,7 @@ def get_one_project_in_one_section(call_no, project_id):
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
     enrollments = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
     if enrollments is None:
-        response = jsonify('Section does not exist!')
+        response = jsonify('No record found!')
         response.status_code = 400
         return response
 
@@ -192,8 +192,23 @@ def get_all_students_in_one_project_in_one_section(call_no, project_id):
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['GET'])
-def get_a_student_in_one_section(uni):
-    pass
+def get_a_student_in_one_section(call_no, uni):
+    enrollment = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
+    if enrollment is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    # also return the project that the student belongs to
+    project_id = enrollment.project_id
+    project = ProjectResource.get_by_id(project_id) # foreign key must exist
+    data = {"uni": uni, 
+            "project_id": project_id, 
+            "project_name": project.project_name, 
+            "team_name": project.team_name}
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 if __name__ == "__main__":

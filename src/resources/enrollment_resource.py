@@ -17,5 +17,12 @@ class EnrollmentResource:
     @staticmethod
     def get_uni_by_callno_and_id(call_no, project_id):
         return db.session.query(Enrollment.uni).filter_by(call_no=call_no, project_id=project_id)
+
+    @staticmethod
+    def get_by_callno_and_uni(call_no, uni):
+        return db.session.query(Enrollment).filter_by(call_no=call_no, uni=uni).first()
+
+
+        
         
     
