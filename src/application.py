@@ -160,7 +160,19 @@ def get_all_projects_in_one_section(call_no):
 # Zhiyuan
 @app.route("/api/sections/<call_no>/projects/<project_id>", methods=['GET'])
 def get_one_project_in_one_section(call_no, project_id):
-    pass
+    project = ProjectResource.get_by_callno_and_id(call_no, project_id)
+    if project is None:
+        response = jsonify('Section/Project does not exist!')
+        response.status_code = 400
+        return response
+
+    data = {"project_id": project_id, 
+            "project_name": project.project_name, 
+            "team_name": project.team_name
+            }
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
