@@ -8,6 +8,7 @@ from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
 
 
+# send request body: year, semester, day, start_hr, start_min, end_hr, end_min
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
     data = request.json
@@ -105,14 +106,14 @@ def get_one_section(call_no):
         return response
 
     data = {"call_no": section.call_no,
-            "professor": section.professor, 
-            "classroom": section.classroom, 
-            "section_type": section_type.description, 
-            "year": period.year, 
-            "semester": period.semester, 
-            "day": period.day, 
-            "start_hr": period.start_hr, 
-            "start_min": period.start_min, 
+            "professor": section.professor,
+            "classroom": section.classroom,
+            "section_type": section_type.description,
+            "year": period.year,
+            "semester": period.semester,
+            "day": period.day,
+            "start_hr": period.start_hr,
+            "start_min": period.start_min,
             "end_hr": period.end_hr,
             "end_min": period.end_min,
             }
@@ -120,6 +121,8 @@ def get_one_section(call_no):
     response.status_code = 200
     return response
 
+
+# response fields:
 # Zhiyuan
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
@@ -128,11 +131,12 @@ def get_students_in_one_section(call_no):
         response = jsonify('No record found!')
         response.status_code = 400
         return response
-    
+
     data = [enrollment.uni for enrollment in enrollments]
     response = jsonify(data)
     response.status_code = 200
     return response
+
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>/projects", methods=['GET'])
@@ -142,16 +146,16 @@ def get_all_projects_in_one_section(call_no):
         response = jsonify('No record found!')
         response.status_code = 400
         return response
-    
+
     data = []
     for enrollment in enrollments:
         project_id = enrollment.project_id
         # project id is foreign key
         project = ProjectResource.get_by_id(project_id)
-        data.append({"project_id": project_id, 
-                     "project_name": project.project_name, 
+        data.append({"project_id": project_id,
+                     "project_name": project.project_name,
                      "team_name": project.team_name
-                    })
+                     })
     response = jsonify(data)
     response.status_code = 200
     return response
@@ -166,8 +170,8 @@ def get_one_project_in_one_section(call_no, project_id):
         response.status_code = 400
         return response
 
-    data = {"project_id": project_id, 
-            "project_name": project.project_name, 
+    data = {"project_id": project_id,
+            "project_name": project.project_name,
             "team_name": project.team_name
             }
     response = jsonify(data)
@@ -201,10 +205,10 @@ def get_a_student_in_one_section(call_no, uni):
 
     # also return the project that the student belongs to
     project_id = enrollment.project_id
-    project = ProjectResource.get_by_id(project_id) # foreign key must exist
-    data = {"uni": uni, 
-            "project_id": project_id, 
-            "project_name": project.project_name, 
+    project = ProjectResource.get_by_id(project_id)  # foreign key must exist
+    data = {"uni": uni,
+            "project_id": project_id,
+            "project_name": project.project_name,
             "team_name": project.team_name}
     response = jsonify(data)
     response.status_code = 200
