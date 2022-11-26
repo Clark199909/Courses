@@ -82,6 +82,25 @@ def get_all_students():
 
 
 # Zhiyuan
+'''
+example return
+success
+{
+    "call_no": 1,
+    "classroom": "CSB451",
+    "day": "Fri",
+    "end_hr": 15,
+    "end_min": 40,
+    "professor": "Feguson",
+    "section_type": "in_person",
+    "semester": "Fall",
+    "start_hr": 13,
+    "start_min": 10,
+    "year": 2022
+}
+fail
+"Section does not exist!"
+'''
 @app.route("/api/sections/<call_no>", methods=['GET'])
 def get_one_section(call_no):
     section = SectionResource.get_a_section_by_callno(call_no)
@@ -124,6 +143,19 @@ def get_one_section(call_no):
 
 # response fields:
 # Zhiyuan
+'''
+example return
+success
+[
+    "stu1",
+    "stu2",
+    "stu3",
+    "stu4",
+    "stu5"
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
     enrollments = EnrollmentResource.get_uni_by_callno(call_no)
@@ -139,6 +171,24 @@ def get_students_in_one_section(call_no):
 
 
 # Zhiyuan
+'''
+example return 
+success
+[
+    {
+        "project_id": 1,
+        "project_name": "proj1",
+        "team_name": "team1"
+    },
+    {
+        "project_id": 2,
+        "project_name": "proj2",
+        "team_name": "team2"
+    }
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/projects", methods=['GET'])
 def get_all_projects_in_one_section(call_no):
     enrollments = EnrollmentResource.get_project_by_callno(call_no)
@@ -162,6 +212,17 @@ def get_all_projects_in_one_section(call_no):
 
 
 # Zhiyuan
+'''
+example return
+success
+{
+    "project_id": "2",
+    "project_name": "proj2",
+    "team_name": "team2"
+}
+fail
+"Section/Project does not exist!"
+'''
 @app.route("/api/sections/<call_no>/projects/<project_id>", methods=['GET'])
 def get_one_project_in_one_section(call_no, project_id):
     project = ProjectResource.get_by_callno_and_id(call_no, project_id)
@@ -180,6 +241,16 @@ def get_one_project_in_one_section(call_no, project_id):
 
 
 # Zhiyuan
+'''
+example return
+[
+    "stu3",
+    "stu4",
+    "stu5"
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/projects/<project_id>/all_students", methods=['GET'])
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
     enrollments = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
@@ -195,6 +266,18 @@ def get_all_students_in_one_project_in_one_section(call_no, project_id):
 
 
 # Zhiyuan
+'''
+example return
+success:
+{
+    "project_id": 1,
+    "project_name": "proj1",
+    "team_name": "team1",
+    "uni": "stu2"
+}
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['GET'])
 def get_a_student_in_one_section(call_no, uni):
     enrollment = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
