@@ -9,7 +9,9 @@ class SectionResource:
 
     @staticmethod
     def get_all_sections():
-        return db.session.query(Section)
+        return db.session.query(Section).all()
+
+
     @staticmethod
     def get_a_section(professor, period_id, classroom):
         return db.session.query(Section).filter_by(professor=professor,
@@ -33,3 +35,4 @@ class SectionResource:
     @staticmethod
     def search_section_type(description):
         return db.session.query(SectionType.id).filter_by(description=description).first()
+

@@ -15,9 +15,10 @@ class EnrollmentResource:
         db.session.add(enrollment)
         db.session.commit()
 
+
     @staticmethod
-    def get_all_uni():
-        return db.session.query(Enrollment.uni)
+    def get_all():
+        return db.session.query(Enrollment).all()
     @staticmethod
     def get_enrollment(call_no, uni):
         return db.session.query(Enrollment).filter_by(call_no=call_no,

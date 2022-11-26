@@ -1,3 +1,5 @@
+import json
+
 from flask import request, jsonify
 
 from src import app
@@ -6,6 +8,10 @@ from src.resources.period_resource import PeriodResource
 from src.resources.section_resource import SectionResource
 from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
+
+@app.route("/api/sections/health",methods = ['GET'])
+def health_check():
+    return "Hello! Health Check Succeed!"
 
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
@@ -52,30 +58,30 @@ def add_new_section():
 # Add a new student to an existing section
 @app.route("/api/sections/<call_no>/new_student", methods=['POST'])
 def add_new_student(call_no):
+    #can only accept POST, Body(raw)
     data = request.json
     # Add a resource called StudentResource
     section = SectionResource.get_a_section_by_callno(call_no)
 
     if section is None:
+        #No such section
         response = jsonify('The section deos not exist.')
         response.status_code = 400
         return response
 
-
     uni = data['uni']
-    uni_exist = True
-    #we need to check whether the uni exists
-    if not uni_exist:
-        response = jsonify('The uni is not correct')
-        response.status_code = 400
-        return response
-
+    #we assume uni exists
     enrollment_exist = EnrollmentResource.get_enrollment(call_no,uni)
+
     if enrollment_exist is not None:
         response = jsonify('The student has been added to the section.')
         response.status_code = 400
+        return response
+
+
 
     EnrollmentResource.add_new_enrollment(call_no,uni,data['project_id'])
+
     response = jsonify('Successfully added')
     response.status_code = 200
     return response
@@ -88,16 +94,21 @@ def add_new_student(call_no):
 @app.route("/api/sections/<call_no>/new_project", methods=['POST'])
 def add_new_project(call_no):
     data = request.json
+    #check if the section exists
     section_exist = SectionResource.get_a_section_by_callno(call_no)
     if section_exist is None:
         response = jsonify('Section does not exist!')
         response.status_code = 400
         return response
+
     project_exist = ProjectResource.get_project_id(call_no,data['project_name'],data['team_name'])
-    if project_exist is None:
+
+    #the project has been added!
+    if project_exist is not None:
         response = jsonify('Project already exists!')
         response.status_code = 400
         return response
+
     ProjectResource.add_new_project(call_no,data['project_name'],data['team_name'])
     response = jsonify('Successfully added')
     response.status_code = 200
@@ -105,24 +116,25 @@ def add_new_project(call_no):
 
 # Stephanie
 #Add an enrolled student to an existing project
-@app.route("/api/sections/<call_no>/projects/<project_id>/new_student", methods=['PUT'])
+#change the enrollment
+@app.route("/api/sections/<call_no>/projects/<project_id>/new_student", methods=['POST'])
 def add_student_to_project(call_no, project_id):
     data = request.json
     #check if section exist
+    if SectionResource.get_a_section_by_callno(call_no) is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
     #check if project exist
     project_exist = ProjectResource.get_project_by_project_id(project_id)
     if project_exist is None:
         response = jsonify('The project does not exist!')
         response.status_code = 400
         return response
-    #check if student is enrolled
-    enrolled = EnrollmentResource.get_enrollment(call_no,data['uni'])
-    if enrolled is None:
-        response = jsonify('The student is not enrolled!')
-        response.status_code = 400
-        return response
 
-    EnrollmentResource.update_project_id(call_no,data['uni'],project_id)
+    #add the student to the enrollment table
+    EnrollmentResource.add_new_enrollment(call_no,data['uni'],project_id)
     response = jsonify('Successfully add the student to the project')
     response.status_code = 200
     return response
@@ -130,13 +142,19 @@ def add_student_to_project(call_no, project_id):
 # Stephanie
 @app.route("/api/sections", methods=['GET'])
 def get_all_sections():
+    all_sections = SectionResource.get_all_sections()
+    result = {}
+    result["sections"] = []
+    for section in all_sections:
+        section_dict = {}
+        for c in section.__table__.columns:
+            section_dict[c.name] = getattr(section,c.name)
+        result["sections"].append(json.dumps(section_dict))
 
+    response = jsonify(result)
 
-    #json?
-    response = jsonify(SectionResource.get_all_sections())
     response.status_code = 200
     return response
-
 
 
 
@@ -144,10 +162,18 @@ def get_all_sections():
 @app.route("/api/sections/students", methods=['GET'])
 def get_all_students():
 
-    EnrollmentResource.get_all_uni()
-    #use the uni to get all the studentsß
-    response.status_code = 200
+    all_students = EnrollmentResource.get_all()
+    result = {}
+    result["students"] = []
+    for student in all_students:
+        student_dict = {}
+        for c in student.__table__.columns:
+            student_dict[c.name] = getattr(student, c.name)
+        result["students"].append(json.dumps(student_dict))
 
+    response = jsonify(result)
+
+    response.status_code = 200
     return response
 
 

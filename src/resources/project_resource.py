@@ -17,7 +17,7 @@ class ProjectResource:
 
     @staticmethod
     def get_project_by_project_id(project_id):
-        return db.session.query(Project).filter_by(project_id = project_id).first()
+        return db.session.query(Project).filter_by(id = project_id).first()
 
 
     @staticmethod
