@@ -9,9 +9,7 @@ from src.resources.section_resource import SectionResource
 from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
 
-@app.route("/api/sections/health",methods = ['GET'])
-def health_check():
-    return "Hello! Health Check Succeed!"
+
 
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
@@ -58,6 +56,14 @@ def add_new_section():
 # Add a new student to an existing section
 @app.route("/api/sections/<call_no>/new_student", methods=['POST'])
 def add_new_student(call_no):
+    """
+    :param call_no: 10001
+    :return: request body
+    {
+    "uni":"tk1024",
+    "project_id":2
+    }
+    """
     #can only accept POST, Body(raw)
     data = request.json
     # Add a resource called StudentResource
@@ -71,28 +77,29 @@ def add_new_student(call_no):
 
     uni = data['uni']
     #we assume uni exists
-    enrollment_exist = EnrollmentResource.get_enrollment(call_no,uni)
+    enrollment_exist = EnrollmentResource.get_by_callno_and_uni(call_no,uni)
 
     if enrollment_exist is not None:
         response = jsonify('The student has been added to the section.')
         response.status_code = 400
         return response
-
-
-
     EnrollmentResource.add_new_enrollment(call_no,uni,data['project_id'])
-
     response = jsonify('Successfully added')
     response.status_code = 200
     return response
-
-
-
 
 # Stephanie
 #Create a new project
 @app.route("/api/sections/<call_no>/new_project", methods=['POST'])
 def add_new_project(call_no):
+    """
+    :param call_no: 10001 (make sure the call_no has been added to the database
+    request body:
+    {
+    "project_name":"Donald's Fans",
+    "team_name":"Cloud Computing Team 3"
+    }
+    """
     data = request.json
     #check if the section exists
     section_exist = SectionResource.get_a_section_by_callno(call_no)
@@ -119,6 +126,14 @@ def add_new_project(call_no):
 #change the enrollment
 @app.route("/api/sections/<call_no>/projects/<project_id>/new_student", methods=['POST'])
 def add_student_to_project(call_no, project_id):
+    """
+    :param call_no:10001
+    :param project_id:1
+    request body:
+    {
+    "uni":"df989"
+    }
+    """
     data = request.json
     #check if section exist
     if SectionResource.get_a_section_by_callno(call_no) is None:
@@ -127,7 +142,7 @@ def add_student_to_project(call_no, project_id):
         return response
 
     #check if project exist
-    project_exist = ProjectResource.get_project_by_project_id(project_id)
+    project_exist = ProjectResource.get_by_id(project_id)
     if project_exist is None:
         response = jsonify('The project does not exist!')
         response.status_code = 400
@@ -142,17 +157,31 @@ def add_student_to_project(call_no, project_id):
 # Stephanie
 @app.route("/api/sections", methods=['GET'])
 def get_all_sections():
+    """
+    :return: response body
+    [
+    {
+        "call_no": 10001,
+        "classroom": "Mudd311",
+        "period_id": 1,
+        "professor": "Donald Ferguson",
+        "section_type_id": 1
+    },
+    {
+        "call_no": 10002,
+        "classroom": "Mudd302",
+        "period_id": 2,
+        "professor": "Yuri",
+        "section_type_id": 1
+    }]
+    """
     all_sections = SectionResource.get_all_sections()
-    result = {}
-    result["sections"] = []
-    for section in all_sections:
-        section_dict = {}
-        for c in section.__table__.columns:
-            section_dict[c.name] = getattr(section,c.name)
-        result["sections"].append(json.dumps(section_dict))
+    if all_sections is None:
+        response =  jsonify("No sections found")
+        response.status_code = 400
+        return response
 
-    response = jsonify(result)
-
+    response = jsonify(all_sections)
     response.status_code = 200
     return response
 
@@ -161,18 +190,23 @@ def get_all_sections():
 # Stephanie
 @app.route("/api/sections/students", methods=['GET'])
 def get_all_students():
+    """
+    :return: response body
+    [
+    {
+        "call_no": 10001,
+        "project_id": 1,
+        "uni": "df999"
+    },
+    {
+        "call_no": 10001,
+        "project_id": 1,
+        "uni": "tt1024"
+    }]
+    """
 
-    all_students = EnrollmentResource.get_all()
-    result = {}
-    result["students"] = []
-    for student in all_students:
-        student_dict = {}
-        for c in student.__table__.columns:
-            student_dict[c.name] = getattr(student, c.name)
-        result["students"].append(json.dumps(student_dict))
-
-    response = jsonify(result)
-
+    all_students = EnrollmentResource.get_all_enrollments()
+    response = jsonify(all_students)
     response.status_code = 200
     return response
 

@@ -9,7 +9,18 @@ class SectionResource:
 
     @staticmethod
     def get_all_sections():
-        return db.session.query(Section).all()
+        """
+        :return: a list of dictionaries
+        """
+        all_sections =  db.session.query(Section).all()
+        sections_list = []
+        for section in all_sections:
+            section_dict = {}
+            for c in section.__table__.columns:
+                section_dict[c.name] = getattr(section,c.name)
+            sections_list.append(section_dict)
+        return sections_list
+
 
 
     @staticmethod
