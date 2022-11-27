@@ -5,7 +5,7 @@ from src.models.enrollment import Enrollment
 
 
 class Section(db.Model):
-    db.__tablename__ = 'section'
+    __tablename__ = 'section'
 
     call_no = db.Column(db.Integer, primary_key=True)
     professor = db.Column(db.String(255), nullable=False)

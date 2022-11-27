@@ -11,6 +11,20 @@ from src.resources.project_resource import ProjectResource
 
 
 
+# send request body:
+# {
+#     "year": "2022",
+#     "semester": "Fall",
+#     "day": "MW",
+#     "start_hr": "9",
+#     "start_min": "10",
+#     "end_hr": "10",
+#     "end_min": "25",
+#     "professor": "Donald Ferguson",
+#     "classroom": "ABC123",
+#     "section_type": "CVN"
+# }
+
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
     data = request.json
@@ -30,6 +44,7 @@ def add_new_section():
                                       data['start_min'],
                                       data['end_hr'],
                                       data['end_min'])
+
         period_id = PeriodResource.get_period_id(data['year'],
                                                  data['semester'],
                                                  data['day'],
@@ -212,39 +227,220 @@ def get_all_students():
 
 
 # Zhiyuan
+'''
+example return
+success
+{
+    "call_no": 1,
+    "classroom": "CSB451",
+    "day": "Fri",
+    "end_hr": 15,
+    "end_min": 40,
+    "professor": "Feguson",
+    "section_type": "in_person",
+    "semester": "Fall",
+    "start_hr": 13,
+    "start_min": 10,
+    "year": 2022
+}
+fail
+"Section does not exist!"
+'''
 @app.route("/api/sections/<call_no>", methods=['GET'])
 def get_one_section(call_no):
-    pass
+    section = SectionResource.get_a_section_by_callno(call_no)
+
+    if section is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    section_type_id = section.section_type_id
+    section_type = SectionResource.search_section_type_by_id(section_type_id)
+    if section_type is None:
+        response = jsonify('Section type does not exist! Check db for consistency!')
+        response.status_code = 400
+        return response
+
+    period_id = section.period_id
+    period = PeriodResource.get_period_by_id(period_id)
+    if period is None:
+        response = jsonify('Period does not exist! Check db for consistency!')
+        response.status_code = 400
+        return response
+
+    data = {"call_no": section.call_no,
+            "professor": section.professor,
+            "classroom": section.classroom,
+            "section_type": section_type.description,
+            "year": period.year,
+            "semester": period.semester,
+            "day": period.day,
+            "start_hr": period.start_hr,
+            "start_min": period.start_min,
+            "end_hr": period.end_hr,
+            "end_min": period.end_min,
+            }
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
+# response fields:
 # Zhiyuan
+'''
+example return
+success
+[
+    "stu1",
+    "stu2",
+    "stu3",
+    "stu4",
+    "stu5"
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
-    pass
+    enrollments = EnrollmentResource.get_uni_by_callno(call_no)
+    if enrollments is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    data = [enrollment.uni for enrollment in enrollments]
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
+'''
+example return 
+success
+[
+    {
+        "project_id": 1,
+        "project_name": "proj1",
+        "team_name": "team1"
+    },
+    {
+        "project_id": 2,
+        "project_name": "proj2",
+        "team_name": "team2"
+    }
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/projects", methods=['GET'])
 def get_all_projects_in_one_section(call_no):
-    pass
+    enrollments = EnrollmentResource.get_project_by_callno(call_no)
+    if enrollments is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    data = []
+    for enrollment in enrollments:
+        project_id = enrollment.project_id
+        # project id is foreign key
+        project = ProjectResource.get_by_id(project_id)
+        data.append({"project_id": project_id,
+                     "project_name": project.project_name,
+                     "team_name": project.team_name
+                     })
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
+'''
+example return
+success
+{
+    "project_id": "2",
+    "project_name": "proj2",
+    "team_name": "team2"
+}
+fail
+"Section/Project does not exist!"
+'''
 @app.route("/api/sections/<call_no>/projects/<project_id>", methods=['GET'])
 def get_one_project_in_one_section(call_no, project_id):
-    pass
+    project = ProjectResource.get_by_callno_and_id(call_no, project_id)
+    if project is None:
+        response = jsonify('Section/Project does not exist!')
+        response.status_code = 400
+        return response
+
+    data = {"project_id": project_id,
+            "project_name": project.project_name,
+            "team_name": project.team_name
+            }
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
+'''
+example return
+[
+    "stu3",
+    "stu4",
+    "stu5"
+]
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/projects/<project_id>/all_students", methods=['GET'])
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
-    pass
+    enrollments = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
+    if enrollments is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    data = [enrollment.uni for enrollment in enrollments]
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 # Zhiyuan
+'''
+example return
+success:
+{
+    "project_id": 1,
+    "project_name": "proj1",
+    "team_name": "team1",
+    "uni": "stu2"
+}
+fail
+"No record found!"
+'''
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['GET'])
-def get_a_student_in_one_section(uni):
-    pass
+def get_a_student_in_one_section(call_no, uni):
+    enrollment = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
+    if enrollment is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    # also return the project that the student belongs to
+    project_id = enrollment.project_id
+    project = ProjectResource.get_by_id(project_id)  # foreign key must exist
+    data = {"uni": uni,
+            "project_id": project_id,
+            "project_name": project.project_name,
+            "team_name": project.team_name}
+    response = jsonify(data)
+    response.status_code = 200
+    return response
 
 
 if __name__ == "__main__":

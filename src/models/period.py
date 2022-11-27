@@ -2,7 +2,7 @@ from src import db
 
 
 class Period(db.Model):
-    db.__tablename__ = 'period'
+    __tablename__ = 'period'
 
     id = db.Column(db.Integer, primary_key=True)
     year = db.Column(db.Integer, nullable=False)
