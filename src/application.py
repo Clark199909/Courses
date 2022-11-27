@@ -8,7 +8,19 @@ from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
 
 
-# send request body: year, semester, day, start_hr, start_min, end_hr, end_min
+# send request body:
+# {
+#     "year": "2022",
+#     "semester": "Fall",
+#     "day": "MW",
+#     "start_hr": "9",
+#     "start_min": "10",
+#     "end_hr": "10",
+#     "end_min": "25",
+#     "professor": "Donald Ferguson",
+#     "classroom": "ABC123",
+#     "section_type": "CVN"
+# }
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
     data = request.json
