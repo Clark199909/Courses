@@ -54,6 +54,28 @@ class EnrollmentResource:
         record.project_id = project_id
         db.session.commit()
 
+    @staticmethod
+    def delete_by_section_and_uni(call_no, uni):
+        records = db.session.query(Enrollment).filter_by(call_no=call_no, uni=uni)
+        for record in records:
+            db.session.delete(record)
+        db.session.commit()
+
+    @staticmethod
+    def delete_by_project_id(project_id):
+        records = db.session.query(Enrollment).filter_by(project_id = project_id)
+        for record in records:
+            db.session.delete(record)
+        db.session.commit()
+
+    @staticmethod
+    def update(uni, call_no, project_id):
+        db.session.query(Enrollment).filter_by(uni=uni).update(
+            {'call_no': call_no,
+            'project_id': project_id,
+            })
+        db.session.commit()
+
 
         
         

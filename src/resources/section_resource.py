@@ -44,6 +44,21 @@ class SectionResource:
         db.session.commit()
 
     @staticmethod
+    def delete_a_section_by_call_no(call_no):
+        section = db.session.query(Section).filter_by(call_no=call_no).first()
+        db.session.delete(section)
+        db.session.commit()
+    
+    @staticmethod
+    def update_a_section(call_no, professor, period_id, classroom, section_type_id):
+        db.session.query(Section).filter_by(call_no=call_no).update(
+            {'professor': professor,
+            'period_id': period_id,
+            'classroom': classroom,
+            'section_type_id': section_type_id})
+        db.session.commit()
+
+    @staticmethod
     def search_section_type(description):
         return db.session.query(SectionType.id).filter_by(description=description).first()
 
@@ -55,4 +70,10 @@ class SectionResource:
     @staticmethod
     def search_section_type_by_id(section_type_id):
         return db.session.query(SectionType).filter_by(id=section_type_id).first()
+
+    @staticmethod
+    def delete_a_section_by_call_no(call_no):
+        section = db.session.query(Section).filter_by(call_no=call_no).first()
+        db.session.delete(section)
+        db.session.commit()
 
