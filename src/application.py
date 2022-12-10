@@ -356,6 +356,19 @@ def get_all_projects_in_one_section(call_no):
     return response
 
 
+@app.route("/api/sections/all_projects", methods=['GET'])
+def get_all_projects():
+    all_projects = ProjectResource.get_all_projects()
+    if all_projects is None:
+        response = jsonify("No projects found")
+        response.status_code = 400
+        return response
+
+    response = jsonify(all_projects)
+    response.status_code = 200
+    return response
+
+
 # Zhiyuan
 '''
 example return

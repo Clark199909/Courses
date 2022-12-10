@@ -38,4 +38,13 @@ class ProjectResource:
     def get_by_callno_and_id(call_no, project_id):
         return db.session.query(Project).filter_by(call_no=call_no, id=project_id).first()
 
-    
+    @staticmethod
+    def get_all_projects():
+        all_projects = db.session.query(Project).all()
+        projects_list = []
+        for project in all_projects:
+            project_dict = {}
+            for c in project.__table__.columns:
+                project_dict[c.name] = getattr(project, c.name)
+            projects_list.append(project_dict)
+        return projects_list
