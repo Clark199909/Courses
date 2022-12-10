@@ -39,6 +39,23 @@ class ProjectResource:
         return db.session.query(Project).filter_by(call_no=call_no, id=project_id).first()
 
     @staticmethod
+
+    def get_by_callno(call_no):
+        return db.session.query(Project).filter_by(call_no=call_no)
+
+    @staticmethod
+    def delete_by_id(project_id):
+        project = db.session.query(Project).filter_by(id = project_id).first()
+        db.session.delete(project)
+        db.session.commit()
+
+    @staticmethod
+    def update_a_project(project_id, project_name, team_name):
+        db.session.query(Project).filter_by(id=project_id).update(
+            {'project_name': project_name,
+             'team_name': team_name})
+        db.session.commit()
+
     def get_all_projects():
         all_projects = db.session.query(Project).all()
         projects_list = []

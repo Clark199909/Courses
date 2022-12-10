@@ -27,6 +27,7 @@ from src.resources.project_resource import ProjectResource
 
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
+    # TODO need to check fields in data
     data = request.json
     period_id = PeriodResource.get_period_id(data['year'],
                                              data['semester'],
@@ -452,6 +453,198 @@ def get_a_student_in_one_section(call_no, uni):
             "project_name": project.project_name,
             "team_name": project.team_name}
     response = jsonify(data)
+    response.status_code = 200
+    return response
+
+def _delete_a_project(project_id):
+    try:
+        EnrollmentResource.delete_by_project_id(project_id)
+        ProjectResource.delete_by_id(project_id)
+    except Exception as err:
+        print(f"error: {repr(err)}")
+
+# Zhiyuan
+@app.route("/api/sections/<call_no>/students/<uni>", methods=['DELETE'])
+def delete_a_student_in_one_section(call_no, uni):
+    """
+    response
+    "enrollment deletion done"
+    """
+    record = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
+    if record is None:
+        response = jsonify('Student is not in the section!')
+        response.status_code = 400
+        return response
+    
+    try:
+        EnrollmentResource.delete_by_section_and_uni(call_no, uni)
+    except Exception as err:
+        print(f"error: {repr(err)}")
+    response = jsonify("enrollment deletion done")
+    response.status_code = 200
+    return response
+
+# Zhiyuan
+@app.route("/api/sections/delete_project/<project_id>", methods=['DELETE'])
+def delete_project(project_id):
+    """
+    response
+    "project deletion done"
+    """
+    project = ProjectResource.get_by_id(project_id)
+    if project is None:
+        response = jsonify('Project does not exist!')
+        response.status_code = 400
+        return response
+
+    _delete_a_project(project_id)
+    response = jsonify("project deletion done")
+    response.status_code = 200
+    return response
+
+# Zhiyuan
+@app.route("/api/sections/<call_no>", methods=['DELETE'])
+def delete_section(call_no):
+    """
+    response
+    "project deletion done"
+    """
+    section = SectionResource.get_a_section_by_callno(call_no)
+    if section is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    projects = ProjectResource.get_by_callno(call_no)
+    for project in projects:
+        _delete_a_project(project.id)
+    SectionResource.delete_a_section_by_call_no(call_no)
+
+    response = jsonify("section deletion done")
+    response.status_code = 200
+    return response
+
+# Zhiyuan
+@app.route("/api/enrollment/<uni>", methods=['PUT'])
+def update_enrollment(uni):
+    """
+    request body:
+    {
+        "call_no": 2,
+        "project_id": 3,
+    }
+    response:
+    "Successfully updated"
+    """
+    data = request.json
+    call_no, project_id = data['call_no'], data['project_id']
+    #check if section exist
+    section_exist = SectionResource.get_a_section_by_callno(call_no)
+    if section_exist is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    #check if project exist
+    project_exist = ProjectResource.get_by_callno_and_id(call_no, project_id)
+    if project_exist is None:
+        response = jsonify('The project does not exist!')
+        response.status_code = 400
+        return response
+
+    # modify the enrollment table
+    EnrollmentResource.update(uni, call_no, project_id)
+    response = jsonify('Successfully updated')
+    response.status_code = 200
+    return response
+
+# Zhiyuan
+@app.route("/api/sections/update_project/<project_id>", methods=['PUT'])
+def update_project(project_id):
+    """
+    request body:
+    {
+    "project_name":"Donald's Fans",
+    "team_name":"Cloud Computing Team 3"
+    }
+    response:
+    "Successfully updated"
+    """
+    # only project_name and team_name are allowed to be udpated. 
+    # it does not make sense to change its section, as it is subject to constraints of student enrollment
+
+    data = request.json
+    #check if the project exists
+    project_exist = ProjectResource.get_by_id(project_id)
+    if project_exist is None:
+        response = jsonify('Project does not exist!')
+        response.status_code = 400
+        return response
+
+    ProjectResource.update_a_project(project_id, data['project_name'], data['team_name'])
+    response = jsonify('Successfully updated')
+    response.status_code = 200
+    return response
+
+# Zhiyuan
+@app.route("/api/sections/<call_no>", methods=['PUT'])
+def update_section(call_no):
+    """
+    send request body:
+    {
+        "year": "2022",
+        "semester": "Fall",
+        "day": "MW",
+        "start_hr": "9",
+        "start_min": "10",
+        "end_hr": "10",
+        "end_min": "25",
+        "professor": "Donald Ferguson",
+        "classroom": "ABC123",
+        "section_type": "CVN"
+    }
+    response
+    "Successfully updated"
+    """
+    # TODO need to check fields in data
+    data = request.json
+
+    section_exists = SectionResource.get_a_section_by_callno(call_no)
+    if section_exists is None:
+        response = jsonify('Section does not exist!')
+        response.status_code = 400
+        return response
+
+    period_id = PeriodResource.get_period_id(data['year'],
+                                             data['semester'],
+                                             data['day'],
+                                             data['start_hr'],
+                                             data['start_min'],
+                                             data['end_hr'],
+                                             data['end_min'])
+
+    if period_id is None:
+        PeriodResource.add_new_period(data['year'],
+                                      data['semester'],
+                                      data['day'],
+                                      data['start_hr'],
+                                      data['start_min'],
+                                      data['end_hr'],
+                                      data['end_min'])
+
+        period_id = PeriodResource.get_period_id(data['year'],
+                                                 data['semester'],
+                                                 data['day'],
+                                                 data['start_hr'],
+                                                 data['start_min'],
+                                                 data['end_hr'],
+                                                 data['end_min'])
+
+    # TODO handle section_type not exist error
+    section_type_id = SectionResource.search_section_type(data['section_type'])
+    SectionResource.update_a_section(call_no, data['professor'], period_id[0], data['classroom'], section_type_id[0])
+
+    response = jsonify('Successfully updated')
     response.status_code = 200
     return response
 
