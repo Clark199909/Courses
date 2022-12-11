@@ -1,5 +1,6 @@
 from src import db
 from src.models.project import Project
+from src.resources.section_resource import SectionResource
 
 
 class ProjectResource:
@@ -39,7 +40,6 @@ class ProjectResource:
         return db.session.query(Project).filter_by(call_no=call_no, id=project_id).first()
 
     @staticmethod
-
     def get_by_callno(call_no):
         return db.session.query(Project).filter_by(call_no=call_no)
 
@@ -56,6 +56,7 @@ class ProjectResource:
              'team_name': team_name})
         db.session.commit()
 
+    @staticmethod
     def get_all_projects():
         all_projects = db.session.query(Project).all()
         projects_list = []
@@ -63,5 +64,18 @@ class ProjectResource:
             project_dict = {}
             for c in project.__table__.columns:
                 project_dict[c.name] = getattr(project, c.name)
+            project_members = ""
+            for member in project.enrollments:
+                project_members += member.uni
+                project_members += " "
+            project_dict["project_members"] = project_members.strip()
+
+            section = SectionResource.get_a_section_by_callno(project.call_no)
+            project_dict["section_period"] = str(section.period.year) + ' ' + \
+                                             section.period.semester + ' ' + \
+                                             section.period.day + ' ' + \
+                                             str(section.period.start_hr) + ':' + str(section.period.start_min) + '~' + \
+                                             str(section.period.end_hr) + ':' + str(section.period.end_min)
+
             projects_list.append(project_dict)
         return projects_list

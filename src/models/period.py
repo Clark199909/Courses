@@ -12,5 +12,3 @@ class Period(db.Model):
     start_min = db.Column(db.Integer, nullable=False)
     end_hr = db.Column(db.Integer, nullable=False)
     end_min = db.Column(db.Integer, nullable=False)
-
-    sections = db.relationship('Section', backref='period')

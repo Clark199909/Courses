@@ -15,9 +15,21 @@ class SectionResource:
         all_sections =  db.session.query(Section).all()
         sections_list = []
         for section in all_sections:
-            section_dict = {}
-            for c in section.__table__.columns:
-                section_dict[c.name] = getattr(section,c.name)
+            section_dict = {
+                "call_no": section.call_no,
+                "professor": section.professor,
+                "classroom": section.classroom,
+                "year": section.period.year,
+                "semester": section.period.semester,
+                "day": section.period.day,
+                "start_hr": section.period.start_hr,
+                "start_min": section.period.start_min,
+                "end_hr": section.period.end_hr,
+                "end_min": section.period.end_min,
+                "section_type": section.section_type.description,
+                "projects_num": len(section.projects),
+                "enrollments_num": len(section.enrollments)
+            }
             sections_list.append(section_dict)
         return sections_list
 

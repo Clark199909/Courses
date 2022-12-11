@@ -14,5 +14,6 @@ class Section(db.Model):
     section_type_id = db.Column(db.Integer, db.ForeignKey('section_type.id'), nullable=False)
 
     section_type = db.relationship("SectionType")
+    period = db.relationship("Period")
     projects = db.relationship('Project', backref='section')
     enrollments = db.relationship('Enrollment', backref='section')
