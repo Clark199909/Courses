@@ -68,9 +68,9 @@ class EnrollmentResource:
     def delete_by_section_and_uni(call_no, uni):
         records = db.session.query(Enrollment).filter_by(call_no=call_no, uni=uni)
         for record in records:
-            project = ProjectResource.get_by_id(record.project_id)
+            project = None if record.project_id is None else ProjectResource.get_by_id(record.project_id)
             db.session.delete(record)
-            if len(project.enrollments) == 0:
+            if project is not None and len(project.enrollments) == 0:
                 db.session.delete(project)
         db.session.commit()
 
