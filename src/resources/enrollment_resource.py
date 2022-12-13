@@ -1,5 +1,7 @@
 from src import db
 from src.models.enrollment import Enrollment
+from src.resources.project_resource import ProjectResource
+from src.resources.section_resource import SectionResource
 
 
 class EnrollmentResource:
@@ -22,13 +24,21 @@ class EnrollmentResource:
         :return:  a list of dictionaries
         """
         all_enrollments =  db.session.query(Enrollment).all()
-        enrollments_list = []
+        enrollments_dict = {}
         for enrollment in all_enrollments:
             enrollment_dict = {}
             for c in enrollment.__table__.columns:
                 enrollment_dict[c.name] = getattr(enrollment,c.name)
-            enrollments_list.append(enrollment_dict)
-        return enrollments_list
+
+            enrollment_dict['project_name'] = ""
+            enrollment_dict['team_name'] = ""
+            if enrollment.project_id is not None:
+                project = ProjectResource.get_by_id(enrollment.project_id)
+                enrollment_dict['project_name'] = project.project_name
+                enrollment_dict['team_name'] = project.team_name
+            enrollment_dict["section_period"] = SectionResource.get_section_info(enrollment.call_no)
+            enrollments_dict[enrollment.uni] = enrollment_dict
+        return enrollments_dict
 
     @staticmethod
     def get_uni_by_callno(call_no):
@@ -58,7 +68,10 @@ class EnrollmentResource:
     def delete_by_section_and_uni(call_no, uni):
         records = db.session.query(Enrollment).filter_by(call_no=call_no, uni=uni)
         for record in records:
+            project = ProjectResource.get_by_id(record.project_id)
             db.session.delete(record)
+            if len(project.enrollments) == 0:
+                db.session.delete(project)
         db.session.commit()
 
     @staticmethod

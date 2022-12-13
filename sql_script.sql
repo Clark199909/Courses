@@ -56,7 +56,7 @@ create table project(
 create table enrollment(
 	`call_no` int not null,
     `uni` varchar(10) not null,
-    `project_id` int not null,
+    `project_id` int,
     foreign key(`call_no`)
 		references section(`call_no`),
 	foreign key(`project_id`)

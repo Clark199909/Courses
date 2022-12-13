@@ -8,24 +8,23 @@ class ProjectResource:
         pass
 
     @staticmethod
-    def add_new_project(call_no,project_name,team_name):
+    def add_new_project(call_no, project_name, team_name):
         project = Project(call_no=call_no,
                           project_name=project_name,
-                          team_name = team_name)
+                          team_name=team_name)
 
         db.session.add(project)
         db.session.commit()
 
     @staticmethod
     def get_by_id(project_id):
-        return db.session.query(Project).filter_by(id = project_id).first()
-
+        return db.session.query(Project).filter_by(id=project_id).first()
 
     @staticmethod
-    def get_project_id(call_no,project_name,team_name):
+    def get_project_id(call_no, project_name, team_name):
         return db.session.query(Project.id).filter_by(call_no=call_no,
                                                       project_name=project_name,
-                                                      team_name = team_name).first()
+                                                      team_name=team_name).first()
 
     @staticmethod
     def get_by_callno_and_id(call_no, project_id):
@@ -45,7 +44,7 @@ class ProjectResource:
 
     @staticmethod
     def delete_by_id(project_id):
-        project = db.session.query(Project).filter_by(id = project_id).first()
+        project = db.session.query(Project).filter_by(id=project_id).first()
         db.session.delete(project)
         db.session.commit()
 
@@ -70,12 +69,7 @@ class ProjectResource:
                 project_members += " "
             project_dict["project_members"] = project_members.strip()
 
-            section = SectionResource.get_a_section_by_callno(project.call_no)
-            project_dict["section_period"] = str(section.period.year) + ' ' + \
-                                             section.period.semester + ' ' + \
-                                             section.period.day + ' ' + \
-                                             str(section.period.start_hr) + ':' + str(section.period.start_min) + '~' + \
-                                             str(section.period.end_hr) + ':' + str(section.period.end_min)
+            project_dict["section_period"] = SectionResource.get_section_info(project.call_no)
 
             projects_list.append(project_dict)
         return projects_list

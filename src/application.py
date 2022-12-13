@@ -99,7 +99,9 @@ def add_new_student(call_no):
         response = jsonify('The student has been added to the section.')
         response.status_code = 400
         return response
-    EnrollmentResource.add_new_enrollment(call_no,uni,data['project_id'])
+
+    project_id = data['project_id']
+    EnrollmentResource.add_new_enrollment(call_no,uni,project_id)
     response = jsonify('Successfully added')
     response.status_code = 200
     return response

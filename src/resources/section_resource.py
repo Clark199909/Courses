@@ -89,3 +89,12 @@ class SectionResource:
         db.session.delete(section)
         db.session.commit()
 
+    @staticmethod
+    def get_section_info(call_no):
+        section = SectionResource.get_a_section_by_callno(call_no)
+        return str(section.period.year) + ' ' + \
+               section.period.semester + ' ' + \
+               section.period.day + ' ' + \
+               str(section.period.start_hr) + ':' + str(section.period.start_min) + '~' + \
+               str(section.period.end_hr) + ':' + str(section.period.end_min)
+
