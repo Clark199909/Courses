@@ -547,9 +547,7 @@ def update_enrollment(uni):
         response.status_code = 400
         return response
 
-    #check if project exist
-    project_exist = ProjectResource.get_by_callno_and_id(call_no, project_id)
-    if project_exist is None:
+    if project_id is not None and ProjectResource.get_by_callno_and_id(call_no, project_id) is None:
         response = jsonify('The project does not exist!')
         response.status_code = 400
         return response
