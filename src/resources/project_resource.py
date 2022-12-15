@@ -63,11 +63,10 @@ class ProjectResource:
             project_dict = {}
             for c in project.__table__.columns:
                 project_dict[c.name] = getattr(project, c.name)
-            project_members = ""
+            project_members = []
             for member in project.enrollments:
-                project_members += member.uni
-                project_members += " "
-            project_dict["project_members"] = project_members.strip()
+                project_members.append(member.uni)
+            project_dict["project_members"] = project_members
 
             project_dict["section_period"] = SectionResource.get_section_info(project.call_no)
 

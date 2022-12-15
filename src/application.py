@@ -10,7 +10,6 @@ from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
 
 
-
 # send request body:
 # {
 #     "year": "2022",
@@ -80,20 +79,20 @@ def add_new_student(call_no):
     "project_id":2
     }
     """
-    #can only accept POST, Body(raw)
+    # can only accept POST, Body(raw)
     data = request.json
     # Add a resource called StudentResource
     section = SectionResource.get_a_section_by_callno(call_no)
 
     if section is None:
-        #No such section
+        # No such section
         response = jsonify('The section deos not exist.')
         response.status_code = 400
         return response
 
     uni = data['uni']
-    #we assume uni exists
-    enrollment_exist = EnrollmentResource.get_by_callno_and_uni(call_no,uni)
+    # we assume uni exists
+    enrollment_exist = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
 
     if enrollment_exist is not None:
         response = jsonify('The student has been added to the section.')
@@ -101,13 +100,14 @@ def add_new_student(call_no):
         return response
 
     project_id = data['project_id']
-    EnrollmentResource.add_new_enrollment(call_no,uni,project_id)
+    EnrollmentResource.add_new_enrollment(call_no, uni, project_id)
     response = jsonify('Successfully added')
     response.status_code = 200
     return response
 
+
 # Stephanie
-#Create a new project
+# Create a new project
 @app.route("/api/sections/<call_no>/new_project", methods=['POST'])
 def add_new_project(call_no):
     """
@@ -119,29 +119,48 @@ def add_new_project(call_no):
     }
     """
     data = request.json
-    #check if the section exists
+    # check if the section exists
     section_exist = SectionResource.get_a_section_by_callno(call_no)
     if section_exist is None:
         response = jsonify('Section does not exist!')
         response.status_code = 400
         return response
 
-    project_exist = ProjectResource.get_project_id(call_no,data['project_name'],data['team_name'])
+    project_exist = ProjectResource.get_project_id(call_no, data['project_name'], data['team_name'])
 
-    #the project has been added!
+    # the project has been added!
     if project_exist is not None:
         response = jsonify('Project already exists!')
         response.status_code = 400
         return response
 
-    ProjectResource.add_new_project(call_no,data['project_name'],data['team_name'])
+    ProjectResource.add_new_project(call_no, data['project_name'], data['team_name'])
+
+    project_id_res = ProjectResource.get_project_id(call_no, data['project_name'], data['team_name'])
+    project_id = None if project_id_res is None else project_id_res[0]
+    for uni in data['project_members']:
+        if SectionResource.get_a_section_by_callno(call_no) is None:
+            response = jsonify('Section does not exist!')
+            response.status_code = 400
+            return response
+
+        # check if project exist
+        project_exist = ProjectResource.get_by_id(project_id)
+        if project_exist is None:
+            response = jsonify('The project does not exist!')
+            response.status_code = 400
+            return response
+
+        EnrollmentResource.update_project_id(call_no, uni, project_id)
+
     response = jsonify('Successfully added')
     response.status_code = 200
     return response
 
+
 # Stephanie
-#Add an enrolled student to an existing project
-#change the enrollment
+# Add an enrolled student to an existing project
+# change the enrollment
 @app.route("/api/sections/<call_no>/projects/<project_id>/new_student", methods=['POST'])
 def add_student_to_project(call_no, project_id):
     """
@@ -153,24 +172,51 @@ def add_student_to_project(call_no, project_id):
     }
     """
     data = request.json
-    #check if section exist
+    # check if section exist
     if SectionResource.get_a_section_by_callno(call_no) is None:
         response = jsonify('Section does not exist!')
         response.status_code = 400
         return response
 
-    #check if project exist
+    # check if project exist
     project_exist = ProjectResource.get_by_id(project_id)
     if project_exist is None:
         response = jsonify('The project does not exist!')
         response.status_code = 400
         return response
 
-    #add the student to the enrollment table
-    EnrollmentResource.add_new_enrollment(call_no,data['uni'],project_id)
+    # add the student to the enrollment table
+    EnrollmentResource.add_new_enrollment(call_no, data['uni'], project_id)
     response = jsonify('Successfully add the student to the project')
     response.status_code = 200
     return response
+
+
+@app.route("/api/sections/<call_no>/projects/<project_id>/new_students", methods=['POST'])
+def add_students_to_project(call_no, project_id):
+    data = request.json
+    # check if section exist
+
+    for uni in data['project_members']:
+
+        if SectionResource.get_a_section_by_callno(call_no) is None:
+            response = jsonify('Section does not exist!')
+            response.status_code = 400
+            return response
+
+        # check if project exist
+        project_exist = ProjectResource.get_by_id(project_id)
+        if project_exist is None:
+            response = jsonify('The project does not exist!')
+            response.status_code = 400
+            return response
+
+        EnrollmentResource.update_project_id(call_no, uni, project_id)
+
+    response = jsonify('Successfully add students to the project')
+    response.status_code = 200
+    return response
+
 
 # Stephanie
 @app.route("/api/sections", methods=['GET'])
@@ -195,14 +241,13 @@ def get_all_sections():
     """
     all_sections = SectionResource.get_all_sections()
     if all_sections is None:
-        response =  jsonify("No sections found")
+        response = jsonify("No sections found")
         response.status_code = 400
         return response
 
     response = jsonify(all_sections)
     response.status_code = 200
     return response
-
 
 
 # Stephanie
@@ -249,6 +294,8 @@ success
 fail
 "Section does not exist!"
 '''
+
+
 @app.route("/api/sections/<call_no>", methods=['GET'])
 def get_one_section(call_no):
     section = SectionResource.get_a_section_by_callno(call_no)
@@ -304,6 +351,8 @@ success
 fail
 "No record found!"
 '''
+
+
 @app.route("/api/sections/<call_no>/students", methods=['GET'])
 def get_students_in_one_section(call_no):
     enrollments = EnrollmentResource.get_uni_by_callno(call_no)
@@ -313,6 +362,20 @@ def get_students_in_one_section(call_no):
         return response
 
     data = [enrollment.uni for enrollment in enrollments]
+    response = jsonify(data)
+    response.status_code = 200
+    return response
+
+
+@app.route("/api/sections/<call_no>/students/no_project", methods=['GET'])
+def get_students_in_one_section_with_no_project(call_no):
+    enrollments = EnrollmentResource.get_enrollments_by_callno(call_no)
+    if enrollments is None:
+        response = jsonify('No record found!')
+        response.status_code = 400
+        return response
+
+    data = [enrollment.uni for enrollment in enrollments if enrollment.project_id is None]
     response = jsonify(data)
     response.status_code = 200
     return response
@@ -337,6 +400,8 @@ success
 fail
 "No record found!"
 '''
+
+
 @app.route("/api/sections/<call_no>/projects", methods=['GET'])
 def get_all_projects_in_one_section(call_no):
     enrollments = EnrollmentResource.get_project_by_callno(call_no)
@@ -384,6 +449,8 @@ success
 fail
 "Section/Project does not exist!"
 '''
+
+
 @app.route("/api/sections/<call_no>/projects/<project_id>", methods=['GET'])
 def get_one_project_in_one_section(call_no, project_id):
     project = ProjectResource.get_by_callno_and_id(call_no, project_id)
@@ -412,6 +479,8 @@ example return
 fail
 "No record found!"
 '''
+
+
 @app.route("/api/sections/<call_no>/projects/<project_id>/all_students", methods=['GET'])
 def get_all_students_in_one_project_in_one_section(call_no, project_id):
     enrollments = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
@@ -439,6 +508,8 @@ success:
 fail
 "No record found!"
 '''
+
+
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['GET'])
 def get_a_student_in_one_section(call_no, uni):
     enrollment = EnrollmentResource.get_by_callno_and_uni(call_no, uni)
@@ -458,12 +529,14 @@ def get_a_student_in_one_section(call_no, uni):
     response.status_code = 200
     return response
 
+
 def _delete_a_project(project_id):
     try:
-        EnrollmentResource.delete_by_project_id(project_id)
+        EnrollmentResource.remove_project(project_id)
         ProjectResource.delete_by_id(project_id)
     except Exception as err:
         print(f"error: {repr(err)}")
+
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>/students/<uni>", methods=['DELETE'])
@@ -477,7 +550,7 @@ def delete_a_student_in_one_section(call_no, uni):
         response = jsonify('Student is not in the section!')
         response.status_code = 400
         return response
-    
+
     try:
         EnrollmentResource.delete_by_section_and_uni(call_no, uni)
     except Exception as err:
@@ -485,6 +558,7 @@ def delete_a_student_in_one_section(call_no, uni):
     response = jsonify("enrollment deletion done")
     response.status_code = 200
     return response
+
 
 # Zhiyuan
 @app.route("/api/sections/delete_project/<project_id>", methods=['DELETE'])
@@ -503,6 +577,7 @@ def delete_project(project_id):
     response = jsonify("project deletion done")
     response.status_code = 200
     return response
+
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>", methods=['DELETE'])
@@ -526,6 +601,7 @@ def delete_section(call_no):
     response.status_code = 200
     return response
 
+
 # Zhiyuan
 @app.route("/api/enrollment/<uni>", methods=['PUT'])
 def update_enrollment(uni):
@@ -540,7 +616,7 @@ def update_enrollment(uni):
     """
     data = request.json
     call_no, project_id = data['call_no'], data['project_id']
-    #check if section exist
+    # check if section exist
     section_exist = SectionResource.get_a_section_by_callno(call_no)
     if section_exist is None:
         response = jsonify('Section does not exist!')
@@ -558,14 +634,16 @@ def update_enrollment(uni):
     response.status_code = 200
     return response
 
+
 # Zhiyuan
-@app.route("/api/sections/update_project/<project_id>", methods=['PUT'])
-def update_project(project_id):
+@app.route("/api/sections/<call_no>/update_project/<project_id>", methods=['PUT'])
+def update_project(call_no, project_id):
     """
     request body:
     {
     "project_name":"Donald's Fans",
-    "team_name":"Cloud Computing Team 3"
+    "team_name":"Cloud Computing Team 3",
+    "project_members": ["ab1234"]
     }
     response:
     "Successfully updated"
@@ -574,7 +652,7 @@ def update_project(project_id):
     # it does not make sense to change its section, as it is subject to constraints of student enrollment
 
     data = request.json
-    #check if the project exists
+    # check if the project exists
     project_exist = ProjectResource.get_by_id(project_id)
     if project_exist is None:
         response = jsonify('Project does not exist!')
@@ -582,9 +660,25 @@ def update_project(project_id):
         return response
 
     ProjectResource.update_a_project(project_id, data['project_name'], data['team_name'])
+    original_members = set()
+    original_members_res = EnrollmentResource.get_uni_by_callno_and_id(call_no, project_id)
+    for r in original_members_res:
+        original_members.add(r[0])
+    cur_members = set(data['project_members'])
+    print(original_members, cur_members)
+
+    for uni in cur_members:
+        if uni not in original_members:
+            EnrollmentResource.update_project_id(call_no, uni, project_id)
+
+    for uni in original_members:
+        if uni not in cur_members:
+            EnrollmentResource.update_project_id(call_no, uni, None)
+
     response = jsonify('Successfully updated')
     response.status_code = 200
     return response
+
 
 # Zhiyuan
 @app.route("/api/sections/<call_no>", methods=['PUT'])

@@ -45,6 +45,10 @@ class EnrollmentResource:
         return db.session.query(Enrollment.uni).filter_by(call_no=call_no)
 
     @staticmethod
+    def get_enrollments_by_callno(call_no):
+        return db.session.query(Enrollment).filter_by(call_no=call_no)
+
+    @staticmethod
     def get_project_by_callno(call_no):
         return db.session.query(Enrollment.project_id).filter_by(call_no=call_no).distinct()
 
@@ -87,6 +91,13 @@ class EnrollmentResource:
             {'call_no': call_no,
             'project_id': project_id,
             })
+        db.session.commit()
+
+    @staticmethod
+    def remove_project(project_id):
+        records = db.session.query(Enrollment).filter_by(project_id=project_id)
+        for record in records:
+            record.project_id = None
         db.session.commit()
 
 
