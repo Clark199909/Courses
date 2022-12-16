@@ -92,9 +92,13 @@ class SectionResource:
     @staticmethod
     def get_section_info(call_no):
         section = SectionResource.get_a_section_by_callno(call_no)
+        start_hr_str = "00" if section.period.start_hr == 0 else str(section.period.start_hr)
+        start_min_str = "00" if section.period.start_min == 0 else str(section.period.start_min)
+        end_hr_str = "00" if section.period.end_hr == 0 else str(section.period.end_hr)
+        end_min_str = "00" if section.period.end_min == 0 else str(section.period.end_min)
         return str(section.period.year) + ' ' + \
                section.period.semester + ' ' + \
                section.period.day + ' ' + \
-               str(section.period.start_hr) + ':' + str(section.period.start_min) + '~' + \
-               str(section.period.end_hr) + ':' + str(section.period.end_min)
+               start_hr_str + ':' + start_min_str + '~' + \
+               end_hr_str + ':' + end_min_str
 
