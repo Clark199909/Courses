@@ -10,23 +10,26 @@ from src.resources.enrollment_resource import EnrollmentResource
 from src.resources.project_resource import ProjectResource
 
 
-# send request body:
-# {
-#     "year": "2022",
-#     "semester": "Fall",
-#     "day": "MW",
-#     "start_hr": "9",
-#     "start_min": "10",
-#     "end_hr": "10",
-#     "end_min": "25",
-#     "professor": "Donald Ferguson",
-#     "classroom": "ABC123",
-#     "section_type": "CVN"
-# }
 
 @app.route("/api/sections/new_section", methods=['POST'])
 def add_new_section():
-    # TODO need to check fields in data
+    """
+        send request body:
+        {
+            "year": 2022,
+            "semester": "Fall",
+            "day": "MW",
+            "start_hr": 9,
+            "start_min": 10,
+            "end_hr": 10,
+            "end_min": 25,
+            "professor": "Donald Ferguson",
+            "classroom": "ABC123",
+            "section_type": "CVN"
+        }
+        response
+        "Successfully added"
+        """
     data = request.json
     period_id = PeriodResource.get_period_id(data['year'],
                                              data['semester'],
@@ -116,6 +119,7 @@ def add_new_project(call_no):
     {
     "project_name":"Donald's Fans",
     "team_name":"Cloud Computing Team 3"
+    "project_members": ["ab1234","ab1233"]
     }
     """
     data = request.json
@@ -225,19 +229,21 @@ def get_all_sections():
     :return: response body
     [
     {
-        "call_no": 10001,
-        "classroom": "Mudd311",
-        "period_id": 1,
-        "professor": "Donald Ferguson",
-        "section_type_id": 1
-    },
-    {
-        "call_no": 10002,
-        "classroom": "Mudd302",
-        "period_id": 2,
-        "professor": "Yuri",
-        "section_type_id": 1
-    }]
+        "call_no": number,
+        "professor": string,
+        "classroom": string,
+        "year": number,
+        "semester": string,
+        "day": string,
+        "start_hr": number,
+        "start_min": number,
+        "end_hr": number,
+        "end_min": number,
+        "section_type": string,
+        "projects_num": number,
+        "enrollments_num": number
+    }
+    ]
     """
     all_sections = SectionResource.get_all_sections()
     if all_sections is None:
@@ -257,15 +263,14 @@ def get_all_students():
     :return: response body
     [
     {
-        "call_no": 10001,
-        "project_id": 1,
-        "uni": "df999"
-    },
-    {
-        "call_no": 10001,
-        "project_id": 1,
-        "uni": "tt1024"
-    }]
+        "call_no": number,
+        "project_id": number,
+        "uni": string,
+        "project_name": string,
+        "team_name": string,
+        "section_period": string
+    }
+    ]
     """
 
     all_students = EnrollmentResource.get_all_enrollments()
@@ -369,6 +374,26 @@ def get_students_in_one_section(call_no):
 
 @app.route("/api/sections/<call_no>/students/no_project", methods=['GET'])
 def get_students_in_one_section_with_no_project(call_no):
+    """
+    :return: response body
+    [
+    {
+        "call_no": number,
+        "professor": string,
+        "classroom": string,
+        "year": number,
+        "semester": string,
+        "day": string,
+        "start_hr": number,
+        "start_min": number,
+        "end_hr": number,
+        "end_min": number,
+        "section_type": string,
+        "projects_num": number,
+        "enrollments_num": number
+    }
+    ]
+    """
     enrollments = EnrollmentResource.get_enrollments_by_callno(call_no)
     if enrollments is None:
         response = jsonify('No record found!')
@@ -426,6 +451,19 @@ def get_all_projects_in_one_section(call_no):
 
 @app.route("/api/sections/all_projects", methods=['GET'])
 def get_all_projects():
+    """
+    Response:
+    [
+        {
+            "call_no": number;
+            "id": number;
+            "project_name": string;
+            "team_name": string;
+            "project_members": string[];
+            "section_period": string;
+        }
+    ]
+    """
     all_projects = ProjectResource.get_all_projects()
     if all_projects is None:
         response = jsonify("No projects found")
